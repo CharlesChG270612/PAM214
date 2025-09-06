@@ -41,7 +41,7 @@ public class inicioPAM
 	}
 	public void LineamientosClassroom()
 	{
-		JOptionPane.showMessageDialog(null, "\n1.Comentar con lenguaje apropiado y evitar spam o mensajes fuera de contexto.\n2.Cumplir con las fechas límite establecidas en cada actividad.\n3.No modificar ni eliminar archivos compartidos por el docente.\n4.Usar los comentarios privados para dudas académicas, no para conversaciones personales","Lineamientos de classroom",JOptionPane.PLAIN_MESSAGE);
+		JOptionPane.showMessageDialog(null, "\n1.Entregar los trabajos para su revisión.\n2.Entregas en pdf.\n3.Avisos de clase.\n4.Entregas autorizadas en classroom, 5 calif max","Lineamientos de classroom",JOptionPane.PLAIN_MESSAGE);
 	}
 	public void FechasdeParciales()
 	{
