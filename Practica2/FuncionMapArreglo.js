@@ -8,7 +8,9 @@ const productos = [
 const NombreProductos = productos.filter(Producto =>Producto.precio > 1000).map(productos=>productos.nombre);
 console.log(NombreProductos);
 
-/*const NombreProductos = productos.map(Producto =>{
+
+/*Otra manera sin función filter
+const NombreProductos = productos.map(Producto =>{
 if(Producto.precio > 1000){
     return Producto.nombre;
 }
