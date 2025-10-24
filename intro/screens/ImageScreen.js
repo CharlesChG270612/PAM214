@@ -23,7 +23,7 @@ export default function ImageScreen(){
       <ImageBackground 
       source={{
         uri: 'https://static0.colliderimages.com/wordpress/wp-content/uploads/2022/12/miles-morales-peter-parker-spider-man.jpg?w=1200&h=675&fit=crop',
-      }}
+      }}//
       style={styles.background}
       >
       <View style={styles.overlay}>
