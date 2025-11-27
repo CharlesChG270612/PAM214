@@ -25,26 +25,23 @@ class DatabaseService {
     
     // Función auxiliar para convertir a formato ISO
     ensureISODate(dateString) {
-        console.log('Convirtiendo fecha a ISO:', dateString); // DEBUG
+        console.log('Convirtiendo fecha a ISO:', dateString);
         if (!dateString) {
             console.log('Fecha vacía, usando fecha actual');
             return new Date().toISOString();
         }
         
-        // Si ya es formato ISO, retornar tal cual
         if (dateString.includes('T')) {
             console.log('Ya es formato ISO');
             return dateString;
         }
         
-        // Si es formato SQLite (YYYY-MM-DD HH:MM:SS), convertirlo
         if (dateString.includes(' ')) {
             const isoDate = dateString.replace(' ', 'T') + 'Z';
             console.log('Convertido a ISO:', isoDate);
             return isoDate;
         }
         
-        // Si no se reconoce el formato, usar fecha actual
         console.log('Formato no reconocido, usando fecha actual');
         return new Date().toISOString();
     }
@@ -58,7 +55,6 @@ class DatabaseService {
                 console.log('Usuarios desde localStorage:', usuarios);
                 return usuarios;
             } else {
-                // Asegurar que la fecha tenga formato ISO
                 const usuarios = await this.db.getAllAsync('SELECT * FROM usuarios ORDER BY id DESC');
                 console.log('Usuarios desde SQLite (crudos):', usuarios);
                 
@@ -94,7 +90,6 @@ class DatabaseService {
                 console.log('Usuario agregado a localStorage:', nuevoUsuario);
                 return nuevoUsuario;
             } else {
-                // Para SQLite, usamos CURRENT_TIMESTAMP que maneja SQLite automáticamente
                 const result = await this.db.runAsync(
                     'INSERT INTO usuarios(nombre) VALUES (?)',
                     [nombre]
@@ -109,6 +104,102 @@ class DatabaseService {
             }
         } catch (error) {
             console.error('Error en add:', error);
+            throw error;
+        }
+    }
+
+    // UPDATE - Actualizar usuario
+    async update(id, nombre) {
+        try {
+            console.log('Actualizando usuario ID:', id, 'Nuevo nombre:', nombre);
+            const fechaISO = new Date().toISOString();
+            
+            if (Platform.OS == 'web') {
+                const usuarios = await this.getAll();
+                const usuarioIndex = usuarios.findIndex(u => u.id == id);
+                
+                if (usuarioIndex === -1) {
+                    throw new Error('Usuario no encontrado');
+                }
+                
+                usuarios[usuarioIndex] = {
+                    ...usuarios[usuarioIndex],
+                    nombre,
+                    fecha_creacion: fechaISO // Actualizar fecha de modificación
+                };
+                
+                localStorage.setItem(this.storageKey, JSON.stringify(usuarios));
+                console.log('Usuario actualizado en localStorage:', usuarios[usuarioIndex]);
+                return usuarios[usuarioIndex];
+            } else {
+                const result = await this.db.runAsync(
+                    'UPDATE usuarios SET nombre = ?, fecha_creacion = ? WHERE id = ?',
+                    [nombre, fechaISO, id]
+                );
+                
+                if (result.changes === 0) {
+                    throw new Error('Usuario no encontrado');
+                }
+                
+                const usuarioActualizado = {
+                    id: parseInt(id),
+                    nombre,
+                    fecha_creacion: fechaISO
+                };
+                
+                console.log('Usuario actualizado en SQLite:', usuarioActualizado);
+                return usuarioActualizado;
+            }
+        } catch (error) {
+            console.error('Error en update:', error);
+            throw error;
+        }
+    }
+
+    // DELETE - Eliminar usuario
+    async delete(id) {
+        try {
+            console.log('Eliminando usuario ID:', id);
+            
+            if (Platform.OS == 'web') {
+                const usuarios = await this.getAll();
+                const usuarioIndex = usuarios.findIndex(u => u.id == id);
+                
+                if (usuarioIndex === -1) {
+                    throw new Error('Usuario no encontrado');
+                }
+                
+                const usuarioEliminado = usuarios[usuarioIndex];
+                usuarios.splice(usuarioIndex, 1);
+                
+                localStorage.setItem(this.storageKey, JSON.stringify(usuarios));
+                console.log('Usuario eliminado de localStorage:', usuarioEliminado);
+                return usuarioEliminado;
+            } else {
+                // Primero obtener el usuario para retornarlo
+                const usuario = await this.db.getFirstAsync(
+                    'SELECT * FROM usuarios WHERE id = ?',
+                    [id]
+                );
+                
+                if (!usuario) {
+                    throw new Error('Usuario no encontrado');
+                }
+                
+                const result = await this.db.runAsync(
+                    'DELETE FROM usuarios WHERE id = ?',
+                    [id]
+                );
+                
+                if (result.changes === 0) {
+                    throw new Error('Usuario no encontrado');
+                }
+                
+                console.log('Usuario eliminado de SQLite:', usuario);
+                return usuario;
+            }
+        } catch (error) {
+            console.error('Error en delete:', error);
             throw error;
         }
     }
